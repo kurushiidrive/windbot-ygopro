@@ -1,5 +1,15 @@
 # WindBot
 
+Cloned from https://github.com/IceYGO/windbot.
+
+I added the following features:
+- support for WindBot to be able to keep track of **counters** (Bushido Counters, Spell Counters, etc.) on a `ClientCard`
+- a WIP executor for a 2011.03 banlist (5D's format) Six Samurai deck
+
+More to come
+
+~
+
 A C# bot for YGOPro, compatible with the [YGOSharp](https://github.com/IceYGO/ygosharp) and [SRVPro](https://github.com/moecube/srvpro) server.
 
 ### How to use:
