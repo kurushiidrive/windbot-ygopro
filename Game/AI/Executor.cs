@@ -160,6 +160,11 @@ namespace WindBot.Game.AI
             return null;
         }
 
+        public virtual IList<int> OnSelectCounter(int type, int quantity, IList<ClientCard> cards, IList<int> counters)
+        {
+            return null;
+        }
+
         public virtual IList<ClientCard> OnCardSorting(IList<ClientCard> cards)
         {
             // For overriding

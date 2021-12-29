@@ -142,6 +142,9 @@ namespace WindBot.Game
             _messages.Add(GameMessage.SpSummoned, OnSpSummoned);
             _messages.Add(GameMessage.FlipSummoning, OnSummoning);
             _messages.Add(GameMessage.FlipSummoned, OnSummoned);
+            //
+            _messages.Add(GameMessage.AddCounter, OnUpdateCounter);
+            _messages.Add(GameMessage.RemoveCounter, OnUpdateCounter);
         }
 
         private void OnJoinGame(BinaryReader packet)
@@ -765,6 +768,27 @@ namespace WindBot.Game
         {
             /*BinaryWriter writer =*/ GamePacketFactory.Create(CtosMessage.Response);
             Connection.Send(CtosMessage.Response, -1);
+        }
+
+        private void OnUpdateCounter(BinaryReader packet)
+        {
+            Console.WriteLine("Update counter packet length: " + packet.BaseStream.Length);
+            int type = packet.ReadInt16();
+            int player = GetLocalPlayer(packet.ReadByte());
+            int loc = packet.ReadByte();
+            int seq = packet.ReadByte();
+            int quantity = packet.ReadInt16();
+
+            packet.BaseStream.Position = 1;
+            int add_or_remove = ((GameMessage)packet.ReadByte() == GameMessage.AddCounter) ? 1 : -1;    // 1 for adding counters, -1 for removing
+            packet.BaseStream.Position = 9;
+
+            int delta_counters = quantity * add_or_remove;
+
+            ClientCard card = _duel.GetCard(player, (CardLocation)loc, seq);
+            Console.WriteLine("\tType: " + type + " Player: " + player + " Loc: " + loc + " Seq: " + seq + " Quantity: " + delta_counters + " Card: " + card.Id);
+
+            card.UpdateCounter(type, delta_counters);
         }
 
         private void OnUpdateCard(BinaryReader packet)

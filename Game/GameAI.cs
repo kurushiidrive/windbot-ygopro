@@ -321,6 +321,10 @@ namespace WindBot.Game
         /// <returns>List of used counters.</returns>
         public IList<int> OnSelectCounter(int type, int quantity, IList<ClientCard> cards, IList<int> counters)
         {
+            IList<int> res = Executor.OnSelectCounter(type, quantity, cards, counters);
+            if (res != null)
+                return res;
+
             // Always select the first available counters.
             int[] used = new int[counters.Count];
             int i = 0;

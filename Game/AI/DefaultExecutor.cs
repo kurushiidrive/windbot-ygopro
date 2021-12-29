@@ -51,6 +51,7 @@ namespace WindBot.Game.AI
             public const int EvilswarmExcitonKnight = 46772449;
             public const int HarpiesFeatherDuster = 18144506;
             public const int DarkMagicAttack = 2314238;
+            public const int GiantTrunade = 42703248;
             public const int MysticalSpaceTyphoon = 5318639;
             public const int CosmicCyclone = 8267140;
             public const int GalaxyCyclone = 5133471;
@@ -310,6 +311,11 @@ namespace WindBot.Game.AI
         public override bool OnSelectMonsterSummonOrSet(ClientCard card)
         {
             return card.Level <= 4 && Bot.GetMonsters().Count(m => m.IsFaceup()) == 0 && Util.IsAllEnemyBetterThanValue(card.Attack, true);
+        }
+
+        public override IList<int> OnSelectCounter(int type, int quantity, IList<ClientCard> cards, IList<int> counters)
+        {
+            return null;
         }
 
         /// <summary>
@@ -642,6 +648,14 @@ namespace WindBot.Game.AI
         /// Activate before other winds, if enemy have more than 2 S&T.
         /// </summary>
         protected bool DefaultHarpiesFeatherDusterFirst()
+        {
+            return Enemy.GetSpellCount() >= 2;
+        }
+
+        /// <summary>
+        /// Activate before other winds, if enemy have more than 2 S&T.
+        /// </summary>
+        protected bool DefaultGiantTrunade()
         {
             return Enemy.GetSpellCount() >= 2;
         }

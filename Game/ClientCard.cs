@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using YGOSharp.OCGWrapper;
@@ -31,6 +32,8 @@ namespace WindBot.Game
         public int BaseDefense { get; private set; }
         public int RealPower { get; set; }
         public List<int> Overlays { get; private set; }
+        // +
+        public Dictionary<int, int> Counters { get; private set; }
         public int Owner { get; private set; }
         public int Controller { get; set; }
         public int Disabled { get; private set; }
@@ -64,6 +67,7 @@ namespace WindBot.Game
             Sequence = sequence;
             Position = position;
             Overlays = new List<int>();
+            Counters = new Dictionary<int, int>();
             EquipCards = new List<ClientCard>();
             OwnTargets = new List<ClientCard>();
             TargetCards = new List<ClientCard>();
@@ -369,6 +373,13 @@ namespace WindBot.Game
         public bool Equals(ClientCard card)
         {
             return ReferenceEquals(this, card);
+        }
+
+        public void UpdateCounter(int type, int amount)
+        {
+            if (!Counters.ContainsKey(type))
+                Counters.Add(type, 0);
+            Counters[type] += amount;
         }
     }
 }
