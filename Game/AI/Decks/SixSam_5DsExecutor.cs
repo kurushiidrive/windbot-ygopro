@@ -87,9 +87,11 @@ namespace WindBot.Game.AI.Decks
             AddExecutor(ExecutorType.Activate, CardId.UpstartGoblin, UpstartGoblinActivate);
             AddExecutor(ExecutorType.Activate, CardId.SixSamuraiUnited, SixSamuraiUnitedSpellSet);
             AddExecutor(ExecutorType.Activate, CardId.SixSamuraiUnited, SixSamuraiUnitedActivate);
+            AddExecutor(ExecutorType.Activate, CardId.GatewayoftheSix, GatewayoftheSixSpellSet);
             AddExecutor(ExecutorType.Activate, CardId.GatewayoftheSix, GatewayoftheSixActivate);
 
             // SS
+            AddExecutor(ExecutorType.SpSummon, CardId.LegendarySixSamuraiShiEn, LegendarySixSamuraiShiEnNormalSummon);
             AddExecutor(ExecutorType.SpSummon, CardId.GrandmasteroftheSixSamurai, GrandmasteroftheSixSamuraiActivate);
             AddExecutor(ExecutorType.SpSummon, CardId.LegendarySixSamuraiKizan, LegendarySixSamuraiKizanActivate);
             AddExecutor(ExecutorType.Activate, CardId.LegendarySixSamuraiKageki, LegendarySixSamuraiKagekiActivate);
@@ -108,13 +110,11 @@ namespace WindBot.Game.AI.Decks
             AddExecutor(ExecutorType.Summon, CardId.LegendarySixSamuraiKizan, LegendarySixSamuraiKizanNormalSummon);
 
             // extra deck
-            AddExecutor(ExecutorType.SpSummon, CardId.LegendarySixSamuraiShiEn, LegendarySixSamuraiShiEnNormalSummon);
             AddExecutor(ExecutorType.SpSummon, CardId.TrishulaDragonoftheIceBarrier, TrishulaDragonoftheIceBarrierNormalSummon);
 
             AddExecutor(ExecutorType.Repos, DefaultMonsterRepos);
             AddExecutor(ExecutorType.MonsterSet, CardId.KagemushaoftheSixSamurai, KagemushaoftheSixSamuraiMonsterSet);
             AddExecutor(ExecutorType.MonsterSet, CardId.LegendarySixSamuraiKageki, KagemushaoftheSixSamuraiMonsterSet);
-            AddExecutor(ExecutorType.MonsterSet, CardId.SpiritoftheSixSamurai, SpiritoftheSixSamuraiMonsterSet);
 
             AddExecutor(ExecutorType.GoToBattlePhase);
 
@@ -235,9 +235,14 @@ namespace WindBot.Game.AI.Decks
             */
         }
 
-            // All Normal Monster Methods
+        public override bool OnSelectHand()
+        {
+            return true;    // always go first if given the opportunity
+        }
 
-            // All Effect Monster Methods
+        // All Normal Monster Methods
+
+        // All Effect Monster Methods
 
         private bool GrandmasteroftheSixSamuraiNormalSummon()
         {
@@ -311,7 +316,12 @@ namespace WindBot.Game.AI.Decks
 
         private bool LegendarySixSamuraiEnishiActivate()
         {
+            ClientCard target = Util.GetProblematicEnemyMonster();
+            if (target == null)
+                return false;
 
+            AI.SelectCard(CardId.LegendarySixSamuraiKageki, CardId.KagemushaoftheSixSamurai, CardId.SpiritoftheSixSamurai, CardId.GrandmasteroftheSixSamurai, CardId.LegendarySixSamuraiShiEn);
+            AI.SelectNextCard(target);
             return true;
         }
 
@@ -345,13 +355,16 @@ namespace WindBot.Game.AI.Decks
             foreach (ClientCard card in Bot.Hand)
                 if (card != null && card.IsCode(CardId.KagemushaoftheSixSamurai, CardId.SpiritoftheSixSamurai, CardId.LegendarySixSamuraiEnishi, CardId.LegendarySixSamuraiKizan, CardId.GrandmasteroftheSixSamurai))
                     return true;
+            if (Bot.HasInMonstersZone(CardId.KagemushaoftheSixSamurai))
+                return true;
             return false;
         }
 
         private bool LegendarySixSamuraiKagekiMonsterSet()
         {
-
-            return true;
+            if (Duel.Turn == 0 || Enemy.GetMonsterCount() > Bot.GetMonsterCount())
+                return true;
+            return false;
         }
 
         private bool LegendarySixSamuraiKagekiRepos()
@@ -372,13 +385,16 @@ namespace WindBot.Game.AI.Decks
         {
             if (Bot.HasInHand(CardId.LegendarySixSamuraiKizan) || Bot.HasInHand(CardId.GrandmasteroftheSixSamurai))
                 return true;
+            if (Bot.HasInMonstersZone(CardId.LegendarySixSamuraiKageki))
+                return true;
             return false;
         }
 
         private bool KagemushaoftheSixSamuraiMonsterSet()
         {
-
-            return true;
+            if (Duel.Turn == 0 || Enemy.GetMonsterCount() > Bot.GetMonsterCount())
+                return true;
+            return false;
         }
 
         private bool KagemushaoftheSixSamuraiRepos()
@@ -625,8 +641,14 @@ namespace WindBot.Game.AI.Decks
 
         private bool LegendarySixSamuraiShiEnActivate()
         {
-
-            return Duel.LastChainPlayer == 1;
+            if (ActivateDescription == Util.GetStringId(CardId.LegendarySixSamuraiShiEn, 0))
+                return Duel.LastChainPlayer == 1;
+            else if (ActivateDescription == Util.GetStringId(CardId.LegendarySixSamuraiShiEn, 1))
+            {
+                AI.SelectCard(Bot.MonsterZone.GetMatchingCards(card => card.Name.Contains("Six Samurai")).OrderBy(c => c.Attack).ToList());
+                return true;
+            }
+            return false;
         }
 
         private bool NaturiaBeastNormalSummon()
@@ -859,14 +881,77 @@ namespace WindBot.Game.AI.Decks
 
         private bool GatewayoftheSixSpellSet()
         {
-
-            return DefaultSpellSet();
+            if (Card.Location != CardLocation.Hand)
+                return false;
+            if (Bot.Hand.GetMatchingCardsCount(card => card.Name.Contains("Six Samurai")) >= 2)
+                return Bot.GetSpellCountWithoutField() < 4;
+            return false;
         }
 
         private bool GatewayoftheSixActivate()
         {
+            if (Card.Location == CardLocation.Hand)
+                return false;
+            if (Card.Location == CardLocation.SpellZone && Card.IsFacedown())
+                return true;
+            if (ActivateDescription == Util.GetStringId(CardId.GatewayoftheSix, 0))
+            {
+                if (Duel.Phase == DuelPhase.Main2)
+                    return false;
 
-            return true;
+                IList<ClientCard> sixsams = Bot.MonsterZone.GetMatchingCards(card => card.Name.Contains("Six Samurai"));
+                if (sixsams.Count == 0)
+                    return false;
+
+                ClientCard bestatk = sixsams.OrderByDescending(c => c.Attack).FirstOrDefault();
+                ClientCard worstatk = sixsams.OrderBy(c => c.Attack).FirstOrDefault();
+
+                // prioritise board advantage if opp's best-power monster is within (Counters + 2*(# of SS-able Kizans and Grandmasters in hand) - 4)/2*500 of bot's best-power monster
+                int kizans_and_grandmaster = Main.SpecialSummonableCards.GetMatchingCardsCount(card => card.Name.Contains("Legendary Six Samurai - Kizan"));
+                if (Main.SpecialSummonableCards.ContainsCardWithId(CardId.GrandmasteroftheSixSamurai))
+                    kizans_and_grandmaster++;
+                if (Bot.GetMonsterCount() <= Enemy.GetMonsterCount() && (Card.Counters[3] >= 4 || kizans_and_grandmaster > 0) && 
+                    ((Card.Counters[3] + 2*kizans_and_grandmaster - 4)/2*500)+bestatk.Attack > Util.GetBestPower(Enemy))
+                {
+                    Console.WriteLine("Board adv selection");
+                    return false;
+                }
+
+                // because of ordering of actions, kizans_and_grandmaster are incorporated into this calculation with the assumption that they will be successfully SS'd
+                if (bestatk.Attack <= Util.GetBestPower(Enemy) && bestatk.Attack + 500 * (Card.Counters[3] / 2 + kizans_and_grandmaster) > Util.GetBestPower(Enemy))
+                {
+                    AI.SelectCard(bestatk);
+                    return true;
+                }
+                else if (Enemy.MonsterZone.GetMonsters().Count == 0 && Util.GetTotalAttackingMonsterAttack(0) < Enemy.LifePoints && Util.GetTotalAttackingMonsterAttack(0) + 500 * (Card.Counters[3] / 2) >= Enemy.LifePoints)
+                {
+                    AI.SelectCard(worstatk);
+                    return true;
+                }
+                return false;
+            }
+            if (ActivateDescription == Util.GetStringId(CardId.GatewayoftheSix, 1))
+            {
+                if (!Bot.HasInHand(CardId.LegendarySixSamuraiKageki) && Bot.HasInHand(CardId.KagemushaoftheSixSamurai))
+                    AI.SelectCard(CardId.LegendarySixSamuraiKageki);
+                else if (Bot.HasInHand(CardId.LegendarySixSamuraiKageki) && !Bot.HasInHand(CardId.KagemushaoftheSixSamurai))
+                    AI.SelectCard(CardId.KagemushaoftheSixSamurai);
+                else if (Bot.HasInHand(CardId.KagemushaoftheSixSamurai) && Bot.HasInHand(CardId.LegendarySixSamuraiKageki) && (!Bot.HasInHand(CardId.LegendarySixSamuraiKizan) || !Bot.HasInHand(CardId.GrandmasteroftheSixSamurai)))
+                    AI.SelectCard(CardId.LegendarySixSamuraiKizan, CardId.GrandmasteroftheSixSamurai);
+                else if (Bot.HasInHand(CardId.GrandmasteroftheSixSamurai) && !Bot.HasInHand(CardId.LegendarySixSamuraiKageki) && !Bot.HasInHand(CardId.KagemushaoftheSixSamurai))
+                {
+                    if (Bot.Graveyard.GetMatchingCardsCount(card => card.Name.Contains("Six Samurai")) >= 2)
+                        AI.SelectCard(CardId.LegendarySixSamuraiEnishi, CardId.SpiritoftheSixSamurai, CardId.LegendarySixSamuraiKizan, CardId.KagemushaoftheSixSamurai);
+                    else
+                        AI.SelectCard(CardId.SpiritoftheSixSamurai, CardId.LegendarySixSamuraiKizan, CardId.KagemushaoftheSixSamurai);
+                }
+                else if (!Bot.HasInExtra(CardId.LegendarySixSamuraiShiEn))
+                    AI.SelectCard(CardId.LegendarySixSamuraiShiEn);
+                else
+                    AI.SelectCard(CardId.LegendarySixSamuraiKizan, CardId.GrandmasteroftheSixSamurai, CardId.LegendarySixSamuraiKageki);
+                return true;
+            }
+            return false;
         }
 
         private bool SixSamuraiUnitedSpellSet()
@@ -884,6 +969,8 @@ namespace WindBot.Game.AI.Decks
         {
             if (Card.Location == CardLocation.Hand)
                 return false;
+            if (Card.Location == CardLocation.SpellZone && Card.IsFacedown())
+                return true;
             if (Card.Counters[3] == 2)      // don't use six samurai united's eff unless it has 2 bushido counters
                 return true;
             return false;
@@ -934,7 +1021,7 @@ namespace WindBot.Game.AI.Decks
         private bool DustTornadoActivate()
         {
             foreach (ClientCard card in Duel.CurrentChain)
-                if (card.IsCode(CardId.DustTornado))
+                if (card.IsCode(CardId.DustTornado) || card.IsCode(CardId.MysticalSpaceTyphoon))
                     return false;
 
             // target card to destroy
@@ -963,8 +1050,12 @@ namespace WindBot.Game.AI.Decks
 
             // set a facedown afterwards?
             ClientCard toset = Bot.Hand.FirstOrDefault(card => card.HasType(CardType.Trap) || card.HasType(CardType.QuickPlay));
-            if (toset != null && Duel.Phase == DuelPhase.End)
-                AI.SelectNextCard(toset);
+            if (toset == null || Duel.Phase != DuelPhase.End)
+            {
+                AI.SelectYesNo(false);
+                return true;
+            }
+            AI.SelectNextCard(toset);
             return true;
         }
 
