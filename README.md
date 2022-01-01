@@ -6,6 +6,8 @@ I added the following features:
 - support for WindBot to be able to keep track of **counters** (Bushido Counters, Spell Counters, etc.) on a `ClientCard`
 - a WIP executor for a 2011.03 banlist (5D's format) Six Samurai deck
 
+* to use the Six Samurai deck, run WindBot with Deck=SixSam_5Ds as the commandline argument
+
 More to come
 
 ~

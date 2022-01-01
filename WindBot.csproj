@@ -69,6 +69,7 @@
     <Compile Include="Game\AI\CardSelector.cs" />
     <Compile Include="Game\AI\DeckAttribute.cs" />
     <Compile Include="Game\AI\DecksManager.cs" />
+    <Compile Include="Game\AI\Decks\Lightsworn_5DsExecutor.cs" />
     <Compile Include="Game\AI\Decks\AltergeistExecutor.cs" />
     <Compile Include="Game\AI\Decks\BraveExecutor.cs" />
     <Compile Include="Game\AI\Decks\FamiliarPossessedExecutor.cs" />
@@ -151,6 +152,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="Decks\AI_Lightsworn_5Ds.ydk" />
     <None Include="Decks\AI_SixSam_5Ds.ydk" />
     <None Include="sqlite3.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

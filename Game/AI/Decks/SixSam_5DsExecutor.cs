@@ -643,7 +643,7 @@ namespace WindBot.Game.AI.Decks
         {
             if (ActivateDescription == Util.GetStringId(CardId.LegendarySixSamuraiShiEn, 0))
                 return Duel.LastChainPlayer == 1;
-            else if (ActivateDescription == Util.GetStringId(CardId.LegendarySixSamuraiShiEn, 1))
+            if (ActivateDescription == Util.GetStringId(CardId.LegendarySixSamuraiShiEn, 1))
             {
                 AI.SelectCard(Bot.MonsterZone.GetMatchingCards(card => card.Name.Contains("Six Samurai")).OrderBy(c => c.Attack).ToList());
                 return true;
@@ -838,7 +838,7 @@ namespace WindBot.Game.AI.Decks
         private bool MysticalSpaceTyphoonActivate()
         {
             foreach (ClientCard card in Duel.CurrentChain)
-                if (card.IsCode(CardId.MysticalSpaceTyphoon))
+                if (card.IsCode(CardId.MysticalSpaceTyphoon) || card.IsCode(CardId.DustTornado))
                     return false;
 
             // target card to destroy
